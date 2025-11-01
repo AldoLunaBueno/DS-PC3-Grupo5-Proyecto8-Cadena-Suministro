@@ -48,19 +48,33 @@ jobs:
         if: steps.set-status.outputs.target_status != ''
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PROJECT_NUMBER: 11 # número de proyecto
+          PROJECT_NUMBER: 11 # número de proyecto que vamos a automatizar
           ORG: "@me" # propietario del proyecto
           # Inyectamos el estado de destino determinado en el paso anterior
           STATUS_NAME: ${{ steps.set-status.outputs.target_status }} 
         run: |
           echo "Evento: ${{ github.event.action }}. Moviendo issue a '$STATUS_NAME'..."
 
-          echo "Buscando issue vinculado al PR #$PR_NUMBER..."
+          echo "Buscando issue vinculado (API) al PR #$PR_NUMBER..."
           ISSUE_NUMBER=$(gh pr view "$PR_NUMBER" --json closingIssuesReferences \
               -q ".closingIssuesReferences[0].number")
+
           if [ -z "$ISSUE_NUMBER" ]; then
-              echo "No issue vinculated to PR"
-              exit 0
+              echo "No se encontró issue vinculado por API. Buscando patrón en el cuerpo del PR..."
+              # Obtenemos el cuerpo del PR del contexto del evento
+              PR_BODY=$(echo "${{ github.event.pull_request.body }}")
+              
+              # Buscamos patrones como "Closes #123", "Fixes #123", "Resolves #123"
+              # grep -oP: Solo muestra la parte que coincide (o) con una RegEx de Perl (P)
+              # \K: Descarta todo lo que vino antes (ej. "Closes #")
+              # \d+: Busca uno o más dígitos
+              # head -n 1: Toma solo el primer issue que encuentre
+              ISSUE_NUMBER=$(echo "$PR_BODY" | grep -oP '(Closes|Fixes|Resolves) #\K\d+' | head -n 1)
+          fi
+
+          if [ -z "$ISSUE_NUMBER" ]; then
+              echo "No se pudo encontrar ningún issue vinculado (ni por API ni en el cuerpo del PR)."
+              exit 0 # Salimos sin error para no fallar el workflow
           fi
           
           echo "Buscando IDs del Proyecto, Campo, y Opción..."
