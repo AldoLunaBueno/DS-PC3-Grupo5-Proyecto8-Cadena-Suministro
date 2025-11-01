@@ -1,0 +1,17 @@
+# API
+fastapi==0.118.0
+
+# LINTER Y FORMATTING
+flake8==7.1.0
+black==25.9.0
+
+# TESTING
+pytest==8.2.2
+monkeypatch==0.1rc3
+
+# SAST (Análisis Estático)
+bandit==1.7.10
+
+# AUDITORÍA DE DEPENDENCIAS
+pip-audit==2.7.2
+safety==3.2.1

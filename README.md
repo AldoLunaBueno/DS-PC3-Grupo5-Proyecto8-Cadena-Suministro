@@ -1,2 +1,5 @@
-# DS-PC3-Grupo5-Proyecto8-Cadena-Suministro
-Proyecto 8. Cadena de Suministro (local): SBOM, firmas y auditoría simulada
+# Proyecto 8. Cadena de Suministro (local)
+
+Para el desarrollador:
+
+Ejecuta `make install` para instalar los hooks de git y las dependencias del proyecto.
