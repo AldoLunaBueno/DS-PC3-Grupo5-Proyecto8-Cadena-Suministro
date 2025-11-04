@@ -25,11 +25,11 @@ def validar_componente(componente, indice):
     errores.extend(errores_campo)    
     if "name" in componente and not isinstance(componente["name"], str):
         errores.append(f"Component[{indice}]: 'name' debe ser string")    
-    if "name" in componente and not componente["name"].strip():
+    if "name" in componente and isinstance(componente["name"], str) and not componente["name"].strip():
         errores.append(f"Component[{indice}]: 'name' no puede estar vacio")    
     if "version" in componente and not isinstance(componente["version"], str):
         errores.append(f"Component[{indice}]: 'version' debe ser string")    
-    if "version" in componente and not componente["version"].strip():
+    if "version" in componente and isinstance(componente["version"], str) and not componente["version"].strip():
         errores.append(f"Component[{indice}]: 'version' no puede estar vacio")    
     if "type" in componente and not isinstance(componente["type"], str):
         errores.append(f"Component[{indice}]: 'type' debe ser string")    
