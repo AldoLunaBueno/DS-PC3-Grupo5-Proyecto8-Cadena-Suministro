@@ -19,7 +19,11 @@ lint: ## Ejecuta todos los linters
 	@echo "TODO: Implementar lints"
 
 test: ## Ejecuta pruebas unitarias e integración
-	@echo "TODO: Implementar pytest"
+	@if [ ! -d .venv ]; then \
+		echo "Error: entorno virtual .venv no encontrado. Ejecute 'make install' primero."; \
+		exit 1; \
+	fi
+	.venv/bin/pytest tests/unit/ -v --cov=supply --cov-report=term-missing --cov-report=html:reports/coverage --cov-fail-under=90 --cov-config=.coveragerc
 
 sast: ## Ejecuta todo el análisis SAST
 	@echo "Análisis SAST completados."
