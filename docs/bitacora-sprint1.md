@@ -30,3 +30,21 @@ La *Lectura 11* menciona el framework `pre-commit`, pero hemos decidido **usar s
 El problema de los hooks manuales es que fallan si el desarrollador olvida activar su entorno virtual (`source .venv/bin/activate`).
 
 **Nuestra solución:** Los scripts en `.githooks/` son robustos. No llaman a `flake8` directamente, sino que usan la ruta explícita al binario instalado por el `Makefile` (`.venv/bin/flake8`). Esto garantiza que el hook use la versión del proyecto, independientemente de si el venv está activado o no, al menos para las herramientas de Python.
+
+## 5. Infraestructura (Terraform)
+
+Creamos una plantilla inicial de infraestructura en `infra/terraform/main.tf`.
+
+- Propósito:
+	- Tener la definición IaC desde el inicio facilita reproducir entornos y documentar recursos necesarios para despliegues futuros.
+	- Permitir que las validaciones de seguridad (tflint, Trivy, tfsec) se integren en el flujo CI antes de aplicar cambios.
+- Buenas prácticas consideradas:
+	- Gestionar variables sensibles con mecanismos seguros (secret manager o variables de entorno en CI).
+	- Añadir módulos cuando el diseño sea estable para evitar duplicación.
+
+## 6. tflint y Trivy
+
+- tflint: linter para Terraform que escanea la configuración y buenas prácticas en el proyecto.
+- Trivy: escáner para imágenes y también soporta análisis IaC y búsqueda de secretos en el proyecto.
+
+No se utilizo tfsec, ya que se esta integrando en trivy y que funciona bajo el principio de "shift-left security" , lo que significa encontrar problemas lo más temprano posible en el ciclo de desarrollo.
