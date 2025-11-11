@@ -32,7 +32,7 @@ tf-validate: ## Ejecuta el formateo y validaciones de la infraestructura
 
 tf-check: ## Ejecuta tflint y tfsec (analizadores de infraestructura)
 	@cd infra/terraform
-	@tflint && tfsec .
+	@tflint && trivy config .
 
 lint: ## Ejecuta todos los linters
 	@echo "TODO: Implementar lints"
