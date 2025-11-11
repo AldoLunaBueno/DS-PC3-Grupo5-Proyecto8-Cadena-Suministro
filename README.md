@@ -4,7 +4,7 @@ Para el desarrollador:
 
 Ejecuta `make install` para instalar los hooks de git y las dependencias del proyecto.
 
-## Cómo aplicar IaC local (Issue 2)
+## Cómo aplicar IaC local
 
 Este repositorio incluye un stack Terraform mínimo en `infra/terraform` que levanta contenedores Docker para simular un *builder* y un *registry* local.
 
@@ -35,6 +35,6 @@ cd infra/terraform && terraform apply
 ```
 
 Notas:
-- `tf-check` ejecuta `tflint` y `tfsec --severity HIGH`. Si `tfsec` detecta hallazgos de severidad HIGH, el target fallará. Ajusta las reglas en `infra/terraform/.tfsec.yml` o en `.tflint.hcl` según lo necesario.
+- `tf-check` ejecuta `tflint` y `trivy config .`. Si `trivy` detecta hallazgos de severidad HIGH, CRITICAL, LOW y MEDIUM, el target fallará. Ajusta las reglas en `.trivy.yaml` o en `.tflint.hcl` según lo necesario.
 - El stack crea un registry en `localhost:5000` y un contenedor `local_builder` que queda corriendo (alpine en bucle). Revisa `infra/terraform/main.tf` para detalles.
 
