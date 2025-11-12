@@ -17,7 +17,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: detect --source . --verbose --no-git
+          args: directory .
       
       - name: Instalar herramientas
         uses: ./.github/actions/setup-tools
