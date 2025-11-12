@@ -6,14 +6,19 @@ BIN = .venv/bin
 help: ## Describe uso de cada target
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-install: install-hooks install-gitleaks ## Instala dependencias y configura el entorno
-	@python3 -m venv .venv
-	@sudo $(BIN)/pip install -r requirements.txt
+install: install-hooks install-env install-gitleaks ## Instala dependencias y configura el entorno
+
+install-infra-tools:
 	@sudo apt update
 	@sudo snap install trivy
 	@sudo snap install tflint
 
+install-env:
+	@python3 -m venv .venv
+	@sudo $(BIN)/pip install -r requirements.txt
+
 install-gitleaks:
+	@sudo apt update
 	@GITLEAKS_VERSION=$$(curl -s "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
 	@wget -qO gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_$${GITLEAKS_VERSION}_linux_x64.tar.gz"
 	@sudo tar xf gitleaks.tar.gz -C /usr/local/bin gitleaks
@@ -25,9 +30,6 @@ install-hooks: ## Configura Git para usar nuestros hooks locales
 
 security-scan: ## Ejecuta escaneo de secretos con Gitleaks
 	@gitleaks detect --no-git --source . --verbose
-
-lint-format: ## Ejecuta linters y formatters
-	@$(BIN)/ruff check . --fix && $(BIN)/ruff format .
 
 tf-plan: ## Inicializa la infraestructura y muestra el plan
 	@cd infra/terraform
@@ -48,6 +50,10 @@ tf-validate: ## Ejecuta el formateo y validaciones de la infraestructura
 tf-check: ## Ejecuta tflint y trivy (analizadores de infraestructura)
 	@cd infra/terraform
 	@tflint && trivy config .
+
+lint-format: ## Ejecuta linters y formatters
+	@$(BIN)/ruff check . --fix
+	@$(BIN)/ruff format .
 
 test: ## Ejecuta pruebas unitarias e integración
 	@if [ ! -d .venv ]; then \
