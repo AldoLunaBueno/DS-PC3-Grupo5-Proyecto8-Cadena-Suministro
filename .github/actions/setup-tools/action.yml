@@ -1,0 +1,10 @@
+name: Setup Tools
+description: Instala Terraform, TFlint, Trivy
+runs:
+  using: "composite"
+  steps:
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.13.x
+    - uses: terraform-linters/setup-tflint@v4
+    - uses: aquasecurity/setup-trivy@v1
