@@ -3,6 +3,17 @@ SHELL := /bin/bash
 .PHONY: help install install-hooks lint-format test deps-audit scan-secrets ci-local tf-validate tf-plan tf-check tf-apply tf-destroy clean
 BIN = .venv/bin
 
+# Detecta si el entorno es CI (GitHub Actions)
+CI ?= false
+BIN ?= .
+
+# Si no es CI, se asume entorno local: FIX=true
+ifeq ($(CI),true)
+  FIX := false
+else
+  FIX := true
+endif
+
 help: ## Describe uso de cada target
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
@@ -51,9 +62,16 @@ tf-check: ## Ejecuta tflint y trivy (analizadores de infraestructura)
 	@cd infra/terraform
 	@tflint && trivy config .
 
-lint-format: ## Ejecuta linters y formatters
+lint-format: ## Ejecuta linters y formatters (auto-fix localmente)
+ifeq ($(FIX),true)
+	@echo "Ejecutando Ruff en modo auto-fix (local)"
 	@$(BIN)/ruff check . --fix
 	@$(BIN)/ruff format .
+else
+	@echo "Ejecutando Ruff en modo verificación (CI)"
+	@$(BIN)/ruff check .
+	@$(BIN)/ruff format --check .
+endif
 
 test: ## Ejecuta pruebas unitarias e integración
 	@if [ ! -d .venv ]; then \
