@@ -7,4 +7,4 @@ runs:
       with:
         terraform_version: 1.13.x
     - uses: terraform-linters/setup-tflint@v4
-    - uses: aquasecurity/setup-trivy@v1
+    - uses: aquasecurity/setup-trivy@v0.2.3
