@@ -36,8 +36,10 @@ install-gitleaks:
 	@rm -rf gitleaks.tar.gz
 
 install-hooks: ## Configura Git para usar nuestros hooks locales
-	git config core.hooksPath .githooks/
+	@git config --unset-all core.hooksPath || true
 	chmod +x .githooks/*
+	$(BIN)/pre-commit install
+	git config core.hooksPath .githooks/
 
 security-scan: ## Ejecuta escaneo de secretos con Gitleaks
 	@gitleaks detect --no-git --source . --verbose
