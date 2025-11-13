@@ -3,6 +3,11 @@ fastapi==0.118.0
 
 # LINTER Y FORMATTING
 ruff==0.14.4
+black==24.10.0
+flake8==7.1.1
+
+# GIT HOOKS
+pre-commit==4.0.1
 
 # TESTING
 pytest==8.2.2
