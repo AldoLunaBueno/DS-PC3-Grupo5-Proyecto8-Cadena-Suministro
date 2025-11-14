@@ -1,0 +1,41 @@
+name: Pipeline CI
+
+on:
+  pull_request:
+    branchs: [main, develop]
+
+jobs:
+  gates:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Clonar repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Escanear con Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Instalar herramientas
+        uses: ./.github/actions/setup-tools
+
+      - name: Preparar la infraestructura
+        run: make tf-plan
+
+      - name: Validar infraestructura
+        run: make tf-validate tf-check
+      
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Preparar el entorno virtual
+        run: make install-env
+
+      - name: Validar del código
+        run: make lint-format
+        

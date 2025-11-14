@@ -2,13 +2,11 @@
 fastapi==0.118.0
 
 # LINTER Y FORMATTING
-flake8==7.1.0
-black==25.9.0
+ruff==0.14.4
 
 # TESTING
 pytest==8.2.2
 pytest-cov==5.0.0
-monkeypatch==0.1rc3
 
 # SAST (Análisis Estático)
 bandit==1.7.10
