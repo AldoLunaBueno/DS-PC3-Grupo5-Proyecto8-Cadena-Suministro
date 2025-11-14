@@ -1,5 +1,7 @@
 [run]
-omit = tests/*
+omit = 
+    tests/*
+    supply/validate_allowlist.py
 
 [report]
 exclude_lines =
