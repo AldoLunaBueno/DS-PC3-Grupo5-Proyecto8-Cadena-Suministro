@@ -48,3 +48,18 @@ Creamos una plantilla inicial de infraestructura en `infra/terraform/main.tf`.
 - Trivy: escáner para imágenes y también soporta análisis IaC y búsqueda de secretos en el proyecto.
 
 No se utilizo tfsec, ya que se esta integrando en trivy y que funciona bajo el principio de "shift-left security" , lo que significa encontrar problemas lo más temprano posible en el ciclo de desarrollo.
+
+
+## 7. Pipeline CI en GitHub Actions
+
+- Aplicamos los targets de Makefile en el pipe de CI para la ejecución de pruebas y gates. Separamos la instalación de dependencias mediante un archivo setup-tools/action.yml dedicado que usa actions para instalarlas. Esto mejora la mantenibilidad y tiempos de ejecución al aprovechar el caching de dependencias.
+- Agregamos el action de gitleaks para robustecer la seguridad (secretos expuestos). La opción "fetch-depth: 0" al clonar el repo en GitHub Actions es para que gitleaks pueda analizar todo el historial del repositorio, no solo el último commit.
+
+## 8. Makefile
+
+Se refactorizó el Makefile para que sea más modular. También se consideró que sea adaptable al entorno (CI ?= false), ya que sus targets sirven tanto para las pruebas y gates de CI como para replicar con ciertas modificaciones todo localmente.
+
+
+
+
+
