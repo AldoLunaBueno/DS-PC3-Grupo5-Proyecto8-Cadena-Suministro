@@ -1,0 +1,32 @@
+default_language_version:
+  python: python3
+
+repos:
+  # Black: formatter de Python
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+
+  # Flake8: linter de Python
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88]
+
+  # Gitleaks: deteccion de Secrets
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+  # Hook local: generar SBOM
+  - repo: local
+    hooks:
+      - id: generate-sbom
+        name: Generate SBOM
+        entry: python supply/generate_sbom.py requirements.txt sbom.json
+        language: system
+        pass_filenames: false
+        always_run: true
