@@ -8,12 +8,14 @@ PROJECT_ROOT = Path(__file__).parent.parent
 
 # Agregar directorio raíz al path para importar modulos
 sys.path.insert(0, str(PROJECT_ROOT))
-from supply.validate_allowlist import validar_allowlist
+
+from supply.validate_allowlist import validar_allowlist  # noqa: E402
 
 # Rutas de los archivos
-SBOM_FILE = PROJECT_ROOT/"sbom.json"
-ALLOWLIST_FILE = PROJECT_ROOT/"allowlist.json"
-DASHBOARD_FILE = PROJECT_ROOT/"dashboard.html"
+SBOM_FILE = PROJECT_ROOT / "sbom.json"
+ALLOWLIST_FILE = PROJECT_ROOT / "allowlist.json"
+DASHBOARD_FILE = PROJECT_ROOT / "dashboard.html"
+
 
 def generar_dashboard_html(sbom_path, allowlist_path, output_path):
     with open(sbom_path, "r", encoding="utf-8") as f:
@@ -24,7 +26,9 @@ def generar_dashboard_html(sbom_path, allowlist_path, output_path):
     hallazgos = 0
     if not es_valido:
         for linea in mensaje.split("\n"):
-            if "Dependencia" in linea and ("NO está en el allowlist" in linea or "no coincide" in linea):
+            no_en_allowlist = "NO está en el allowlist" in linea
+            version_no_coincide = "no coincide" in linea
+            if "Dependencia" in linea and (no_en_allowlist or version_no_coincide):
                 hallazgos += 1
     # Estado de validacion
     estado = "PASSED" if es_valido else "FAILED"
@@ -135,10 +139,12 @@ def generar_dashboard_html(sbom_path, allowlist_path, output_path):
             <h1>SBOM Security Dashboard</h1>
             <div class="subtitle">Security Report</div>
         </div>
-        
+
         <div class="content">
             <div class="status-box">
-                <div class="status-text">Hallazgos SBOM - Allowlist:  {hallazgos}  ({estado})</div>
+                <div class="status-text">
+                    Hallazgos SBOM - Allowlist: {hallazgos} ({estado})
+                </div>
             </div>
 
             <div class="section">
@@ -166,7 +172,7 @@ def generar_dashboard_html(sbom_path, allowlist_path, output_path):
 
     # Escribir HTML
     output_file = Path(output_path)
-    output_file.parent.mkdir(parents=True, exist_ok=True)    
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(html_content)
     return output_file, es_valido, hallazgos, total_dependencias
@@ -175,9 +181,7 @@ def generar_dashboard_html(sbom_path, allowlist_path, output_path):
 if __name__ == "__main__":
     try:
         dashboard_path, valido, hallazgos, total = generar_dashboard_html(
-            str(SBOM_FILE),
-            str(ALLOWLIST_FILE),
-            str(DASHBOARD_FILE)
+            str(SBOM_FILE), str(ALLOWLIST_FILE), str(DASHBOARD_FILE)
         )
         print(f"Dashboard generado exitosamente: {dashboard_path}")
         print(f"  - Total dependencias: {total}")
