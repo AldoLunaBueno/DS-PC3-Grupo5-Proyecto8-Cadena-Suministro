@@ -1,5 +1,5 @@
-import json
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -10,9 +10,9 @@ def cargar_json(ruta_json):
     if not path.exists():
         print(f"Archivo no encontrado en {ruta_json}")
         sys.exit(1)
-    
+
     try:
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except json.JSONDecodeError as e:
         print(f"JSON malformado en {ruta_json}. Detalles: {e}")
@@ -28,32 +28,38 @@ def validar_allowlist(ruta_sbom, ruta_allowlist):
     sbom = cargar_json(ruta_sbom)
     sbom_hash = generar_hash(sbom)
     allowlist = cargar_json(ruta_allowlist)
-    
-    if 'components' not in sbom:
+
+    if "components" not in sbom:
         return False, "El SBOM no contiene la clave 'components'."
-        
-    components = sbom.get('components', [])
+
+    components = sbom.get("components", [])
     if not isinstance(components, list):
         return False, "El campo 'components' debe ser una lista."
 
     errors = []
 
     for component in components:
-        name = component.get('name')
-        version = component.get('version')
+        name = component.get("name")
+        version = component.get("version")
 
         if not name or not version:
-            errors.append(f"Componente inválido: falta 'name' o 'version'.")
+            errors.append("Componente inválido: falta 'name' o 'version'.")
             continue
 
         if name not in allowlist:
-            errors.append(f"Dependencia '{name}' versión '{version}' NO está en el allowlist.")
+            errors.append(
+                (f"Dependencia '{name}' versión '{version}' NO está en el allowlist.")
+            )
             continue
 
         allowed_version = allowlist[name]
         if version != allowed_version:
             errors.append(
-                f"Dependencia '{name}': versión en SBOM '{version}' no coincide con versión en allowlist '{allowed_version}'."
+                (
+                    f"Dependencia '{name}': versión en SBOM '{version}' "
+                    f"no coincide con versión en allowlist "
+                    f"'{allowed_version}'."
+                )
             )
 
     if errors:
@@ -71,7 +77,6 @@ def validar_allowlist(ruta_sbom, ruta_allowlist):
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) > 1:
         archivo_allowlist = sys.argv[1]
     else:
@@ -83,7 +88,7 @@ if __name__ == "__main__":
 
     es_valido, mensaje = validar_allowlist(archivo_sbom, archivo_allowlist)
 
-    if es_valido :
+    if es_valido:
         print(mensaje)
         sys.exit(0)
     else:
