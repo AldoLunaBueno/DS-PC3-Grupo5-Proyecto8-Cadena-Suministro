@@ -19,6 +19,10 @@ pip-wheel-metadata/
 /out/
 /reports/
 
+# Archivos generados
+sbom.json
+dashboard.html
+
 # Testing / coverage / typing
 .pytest_cache/
 .coverage
