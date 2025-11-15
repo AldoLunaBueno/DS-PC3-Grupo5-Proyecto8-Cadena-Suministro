@@ -1,0 +1,11 @@
+# Escaner a la configuración (Terraform)
+scanners: config
+
+# Detecta todos los niveles de severidad
+severity: "HIGH,MEDIUM,LOW,CRITICAL"
+
+# Para cuando falla (Util para CI)
+exit-code: 1
+
+# Formato de salida
+format: "table"

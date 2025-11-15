@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ejecutar hooks de pre-commit framework
+.venv/bin/pre-commit run --hook-stage commit

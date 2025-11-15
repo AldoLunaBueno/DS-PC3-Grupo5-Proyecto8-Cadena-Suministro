@@ -1,0 +1,14 @@
+check:
+  enabled: true
+
+severity:
+  include:
+    - HIGH
+    - CRITICAL
+  exclude:
+    - LOW
+    - MEDIUM
+
+config:
+  general-secrets-no-plaintext-exposure:
+    enabled: true

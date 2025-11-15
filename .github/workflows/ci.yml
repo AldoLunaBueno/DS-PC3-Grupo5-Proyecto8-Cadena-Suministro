@@ -1,0 +1,122 @@
+name: Pipeline CI
+
+on:
+  pull_request:
+    branchs: [main, develop]
+
+jobs:
+  gates:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Clonar repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Escanear con Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Instalar herramientas
+        uses: ./.github/actions/setup-tools
+
+      - name: Preparar la infraestructura
+        run: make tf-plan
+
+      - name: Validar infraestructura
+        run: make tf-validate tf-check
+      
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Preparar el entorno virtual
+        run: make install-env
+
+      - name: Validar del código
+        run: make lint-format
+
+      - name: Generar SBOM
+        run: python supply/generate_sbom.py
+
+      - name: Validar contra Allowlist
+        run: python supply/validate_allowlist.py allowlist.json sbom.json
+
+      - name: Generar Dashboard de Seguridad
+        run: python scripts/generate_dashboard.py
+
+      - name: Subir artefactos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            sbom.json
+            dashboard.html
+
+  actualizar-trend:
+    runs-on: ubuntu-22.04
+    needs: gates
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Autenticar GitHub CLI
+        run: echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+
+      - name: Descargar artefactos
+        uses: actions/download-artifact@v4
+        with:
+          name: security-reports
+          path: ./reports
+
+      - name: Obtener issue y actualizar trend
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Obtener issue vinculado
+          ISSUE=$(gh pr view "$PR_NUMBER" --json closingIssuesReferences -q ".closingIssuesReferences[0].number" 2>/dev/null || \
+                  echo "$PR_BODY" | grep -oP '(Closes|Fixes|Resolves) #\K\d+' | head -n 1)
+          
+          [ -z "$ISSUE" ] && exit 0
+          
+          # Extraer hallazgos
+          HALLAZGOS=$(grep -oP '<div class="metric-value">\K\d+(?=</div>\s*<div class="metric-label">Hallazgos)' ./reports/dashboard.html 2>/dev/null)
+          
+          [ -z "$HALLAZGOS" ] && exit 0
+          
+          # Obtener previos y determinar trend
+          PREVIOS=$(gh issue view "$ISSUE" --json body -q ".body" | grep -oP '(Hallazgos previos|Hallazgos anteriores):\s*\K\d+' || echo "0")
+          
+          if [ "$HALLAZGOS" -lt "$PREVIOS" ]; then
+            TREND="mejora"
+          elif [ "$HALLAZGOS" -gt "$PREVIOS" ]; then
+            TREND="empeora"
+          else
+            exit 0
+          fi
+          
+          # Actualizar campo trend
+          FIELDS=$(gh project field-list 11 --owner "@me" --format json 2>/dev/null)
+          FIELD_ID=$(echo "$FIELDS" | jq -r '.fields[] | select(.name == "trend" or .name == "Trend") | .id')
+          OPTION_ID=$(echo "$FIELDS" | jq -r --arg TREND "$TREND" '.fields[] | select(.name == "trend" or .name == "Trend") | .options[] | select(.name == $TREND) | .id')
+          
+          if [ -n "$FIELD_ID" ] && [ -n "$OPTION_ID" ]; then
+            PROJECT_ID=$(gh project list --format json -q ".projects[] | select(.number == 11) | .id")
+            ITEM_ID=$(gh project item-list 11 --owner "@me" --format json | jq ".items[] | select(.content.number == $ISSUE) | .id")
+            
+            if [ -n "$ITEM_ID" ]; then
+              gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$FIELD_ID" --single-select-option-id "$OPTION_ID"
+              echo "Trend actualizado a: $TREND (hallazgos: $PREVIOS -> $HALLAZGOS)"
+            fi
+          fi

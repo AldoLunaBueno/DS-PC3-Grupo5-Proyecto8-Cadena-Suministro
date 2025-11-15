@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Ejecutando tests con cobertura..."
+
+# Ejecutar make test en modo silencioso (solo errores)
+if make test > /dev/null 2>&1; then
+    echo "Tests exitosos y cobertura >= 90%"
+    exit 0
+else
+    echo ""
+    echo "ERROR: Los tests fallaron o la cobertura es menor al 90%"
+    echo "Push bloqueado. Ejecuta 'make test' para ver los detalles."
+    exit 1
+fi

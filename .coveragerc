@@ -1,0 +1,11 @@
+[run]
+omit = 
+    tests/*
+    supply/validate_allowlist.py
+
+[report]
+exclude_lines =
+    if __name__ == .__main__.:
+    pragma: no cover
+
+show_missing = True

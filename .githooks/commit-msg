@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MSG_FILE=$1
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|chore|security|build|ci|revert)(\([a-z0-9\-]+\))?:\s'
+SECURITY_PATTERN='^SEC\-[0-9]+:'
+
+# Validar formato y longitud de la primera línea
+first="$(head -n1 "$MSG_FILE")"
+printf '%s' "$first" | grep -E "$PATTERN" >/dev/null || {
+  echo "Formato inválido: tipo(scope?): descripción"
+  echo "Ejemplo: feat: añadir validación de entrada"
+  exit 1
+}
+[ "$(printf %s "$first" | wc -m)" -le 72 ] || {
+  echo "Primera línea excede 72 caracteres"
+  exit 1
+}
+
+# Validar tickets de seguridad solo en primera línea
+if printf '%s\n' "$first" | grep -E '^(fix|security)\b' >/dev/null; then
+  printf '%s\n' "$first" | grep -E "$SECURITY_PATTERN" >/dev/null || {
+    echo "Commits de tipo 'fix' o 'security' requieren SEC-XXXX en la primera línea"
+    exit 1
+  }
+fi

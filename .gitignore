@@ -1,0 +1,53 @@
+# Secretos
+.env
+*.tfvars
+
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Compilados de Python / metadata
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Reportes de CI
+/out/
+/reports/
+
+# Archivos generados
+sbom.json
+dashboard.html
+
+# Testing / coverage / typing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*crash.log
+.infra/
+
+# Temporal
+*/.pytest_cache/
+__pycache__
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# SO
+.DS_Store
+Thumbs.db
