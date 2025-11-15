@@ -1,39 +1,73 @@
-resource "docker_network" "iac_local_net" {
-  name = "iac_local_net"
+resource "local_file" "infra_directory" {
+  content  = ""
+  filename = "${path.module}/.infra/.gitkeep"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-resource "docker_image" "registry" {
-  name = "registry:2"
+resource "local_file" "registry_config" {
+  content = jsonencode({
+    name        = var.registry_name
+    address     = var.registry_address
+    port        = var.registry_port
+    type        = "local_registry"
+    status      = "active"
+    created_at  = timestamp()
+    description = "Simulación de registry local para almacenar artefactos"
+  })
+  filename        = "${path.module}/.infra/registry.json"
+  file_permission = "0644"
+
+  depends_on = [local_file.infra_directory]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-resource "docker_container" "registry" {
-  name  = var.registry_container_name
-  image = docker_image.registry.name
+resource "local_file" "builder_config" {
+  content = jsonencode({
+    name        = var.builder_name
+    type        = "local_builder"
+    status      = "active"
+    created_at  = timestamp()
+    description = "Simulación de builder local para compilar artefactos"
+    registry    = var.registry_address
+  })
+  filename        = "${path.module}/.infra/builder.json"
+  file_permission = "0644"
 
-  ports {
-    internal = 5000
-    external = var.registry_external_port
+  depends_on = [local_file.infra_directory]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "null_resource" "registry_simulator" {
+  triggers = {
+    config_hash = sha256(local_file.registry_config.content)
+    name        = var.registry_name
+    port        = var.registry_port
   }
 
-  networks_advanced {
-    name = docker_network.iac_local_net.name
+  lifecycle {
+    create_before_destroy = true
   }
-
-  restart = "always"
 }
 
-resource "docker_image" "builder" {
-  name = "alpine:3.18"
-}
-
-resource "docker_container" "builder" {
-  name    = var.builder_container_name
-  image   = docker_image.builder.name
-  command = ["sh", "-c", "while true; do sleep 3600; done"]
-
-  networks_advanced {
-    name = docker_network.iac_local_net.name
+resource "null_resource" "builder_simulator" {
+  triggers = {
+    config_hash = sha256(local_file.builder_config.content)
+    name        = var.builder_name
+    registry    = var.registry_address
   }
 
-  restart = "no"
+  depends_on = [null_resource.registry_simulator]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
