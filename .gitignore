@@ -35,6 +35,7 @@ htmlcov/
 *.tfstate
 *.tfstate.backup
 *crash.log
+.infra/
 
 # Temporal
 */.pytest_cache/
