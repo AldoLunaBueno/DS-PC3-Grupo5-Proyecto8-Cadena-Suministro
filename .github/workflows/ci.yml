@@ -42,6 +42,9 @@ jobs:
       - name: Generar SBOM
         run: python supply/generate_sbom.py
 
+      - name: Validar contra Allowlist
+        run: python supply/validate_allowlist.py allowlist.json sbom.json
+
       - name: Generar Dashboard de Seguridad
         run: python scripts/generate_dashboard.py
 
