@@ -1,23 +1,23 @@
-variable "docker_host" {
-  description = "Socket o URL para conectar con el daemon de Docker"
-  type        = string
-  default     = "unix:///var/run/docker.sock"
-}
-
-variable "registry_container_name" {
-  description = "Nombre para el contenedor del registro local"
+variable "registry_name" {
+  description = "Nombre para el registro local simulado"
   type        = string
   default     = "local_registry"
 }
 
-variable "builder_container_name" {
-  description = "Nombre para el contenedor del constructor local"
+variable "registry_address" {
+  description = "Dirección del registro local (host:port)"
   type        = string
-  default     = "local_builder"
+  default     = "localhost:5000"
 }
 
-variable "registry_external_port" {
-  description = "Puerto externo para el registro local"
+variable "registry_port" {
+  description = "Puerto del registro local"
   type        = number
   default     = 5000
+}
+
+variable "builder_name" {
+  description = "Nombre del constructor local simulado"
+  type        = string
+  default     = "local_builder"
 }
